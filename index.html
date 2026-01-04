@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Theatre of Dreams – Smart Farm</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Load E-Ra Widget thật -->
+  <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+  <style>
+    :root {
+      --bg: #f2f4f8;
+      --card: #ffffff;
+      --primary: #4f7cff;
+      --secondary: #8a94a6;
+      --green: #22c55e;
+      --red: #ef4444;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; font-family: Inter, system-ui, sans-serif; }
+    html, body {
+      margin: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    body {
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .phone { width: 390px; max-width: 100%; }
+    .header {
+      background: linear-gradient(180deg, #1b2559, #24306e);
+      color: #fff;
+      padding: 24px;
+      border-radius: 26px;
+    }
+    .header small { opacity: 0.75; letter-spacing: 1px; }
+    .header h1 { margin: 6px 0 14px; font-size: 22px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.12);
+      padding: 14px;
+      border-radius: 16px;
+      text-align: center;
+    }
+    .stat span { font-size: 12px; opacity: 0.85; }
+    .stat strong { font-size: 20px; display: block; margin-top: 6px; }
+    .section-title {
+      margin: 18px 6px 10px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      margin-bottom: 14px;
+    }
+    .device {
+      background: var(--card);
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+    }
+    .device-info { display: flex; gap: 12px; align-items: center; }
+    .icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #eef2ff; display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .device-info h4 { margin: 0; font-size: 14px; }
+    .device-info small { color: var(--secondary); font-size: 12px; }
+    .switch {
+      width: 46px; height: 26px; background: #e5e7eb;
+      border-radius: 20px; position: relative; cursor: pointer;
+    }
+    .switch::after {
+      content: ""; width: 22px; height: 22px; background: #fff;
+      border-radius: 50%; position: absolute; top: 2px; left: 2px;
+      transition: 0.25s;
+    }
+    .switch.active { background: var(--primary); }
+    .switch.active::after { left: 22px; }
+    .status-dots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .status-item {
+      text-align: center;
+      font-size: 12px;
+      color: var(--secondary);
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #d1d5db;
+      margin: 0 auto 6px;
+    }
+    .dot.active { background: var(--green); }
+    .plant-status {
+      display: flex;
+      gap: 12px;
+    }
+    .plant-stat {
+      flex: 1;
+      background: #f9fafb;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: center;
+      border: 1px solid #e5e7eb;
+    }
+    .plant-stat .label {
+      font-size: 10px;
+      color: #6b7280;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+    .plant-stat .value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #059669;
+    }
+    .plant-stat .sub {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .fertilizer-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .fert-btn {
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .fert-btn.active {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+    .slider {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #e5e7eb;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+    }
+    .chart-card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+      overflow: visible;
+    }
+    .chart-card canvas { 
+      width: 100% !important; 
+      height: auto !important;
+      min-height: 180px;
+      max-height: 250px;
+    }
+    .comment {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-around;
+      padding: 14px 0;
+      background: var(--card);
+      border-radius: 22px;
+      margin-top: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+    }
+    .nav span { font-size: 13px; color: var(--secondary); cursor: pointer; }
+    .nav .active { color: var(--primary); font-weight: 600; }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      padding: 16px 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      animation: slideDown 0.3s ease;
+    }
+    .toast.show { display: flex; }
+    .toast .icon { font-size: 24px; }
+    .toast .message { font-size: 14px; font-weight: 500; }
+    
+    @keyframes slideDown {
+      from { transform: translate(-50%, -20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+    
+    /* Blinking animation for active status */
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+    .dot.blinking { animation: blink 1.5s infinite; }
+    
+    /* Activity log */
+    .activity-log {
+      max-height: 120px;
+      overflow-y: auto;
+      background: #f9fafb;
+      padding: 10px;
+      border-radius: 12px;
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #4b5563;
+    }
+    .activity-log .log-item {
+      padding: 4px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .activity-log .log-item:last-child { border-bottom: none; }
+    .activity-log .log-time { color: var(--secondary); font-weight: 600; }
+    
+    /* Progress bar */
+    .progress-bar {
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+      display: none;
+    }
+    .progress-bar.active { display: block; }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--green));
+      width: 0%;
+      transition: width 0.3s linear;
+    }
+    
+    /* Fertilizer Status Card */
+    .fertilizer-status-card {
+      background: #f9fafb;
+      padding: 14px;
+      border-radius: 14px;
+      margin-top: 10px;
+    }
+    .status-header {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #1f2937;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .status-row:last-of-type { border-bottom: none; }
+    .status-row > span:first-child { color: #6b7280; }
+    .status-row > span:last-child { font-weight: 600; color: #1f2937; }
+    
+    /* Badge styles */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-green {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .badge-yellow {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge-red {
+      background: #fee2e2;
+      color: #991b1b;
+      animation: badgePulse 2s infinite;
+    }
+    @keyframes badgePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    /* NPK Bars */
+    .npk-bars {
+      margin: 12px 0;
+      padding: 10px 0;
+      border-top: 1px solid #e5e7eb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .npk-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .npk-item:last-child { margin-bottom: 0; }
+    .npk-item label {
+      font-size: 11px;
+      font-weight: 600;
+      width: 55px;
+      color: #6b7280;
+    }
+    .npk-item .bar {
+      flex: 1;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .npk-item .bar > div {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .npk-item .n-bar { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .npk-item .p-bar { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .npk-item .k-bar { background: linear-gradient(90deg, #10b981, #34d399); }
+    .npk-item span {
+      font-size: 11px;
+      font-weight: 600;
+      width: 35px;
+      text-align: right;
+      color: #4b5563;
+    }
+    
+    /* Timeline */
+    .fertilizer-timeline {
+      margin-top: 12px;
+    }
+    .timeline-bar {
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .timeline-past {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #86efac);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    .timeline-marker {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: var(--primary);
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    
+    /* Recommendation */
+    .recommendation {
+      background: #eff6ff;
+      border-left: 3px solid var(--primary);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #1e40af;
+      line-height: 1.5;
+    }
+    .recommendation.warning {
+      background: #fffbeb;
+      border-left-color: #f59e0b;
+      color: #92400e;
+    }
+    .recommendation.danger {
+      background: #fef2f2;
+      border-left-color: #ef4444;
+      color: #991b1b;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .phone {
+        width: 100%;
+        min-height: 100vh;
+      }
+      
+      .header {
+        padding: 20px;
+      }
+      
+      .header h1 {
+        font-size: 18px;
+      }
+      
+      .chart-card canvas {
+        height: auto !important;
+        min-height: 150px;
+      }
+      
+      #control, #analytics {
+        overflow: visible;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      
+      .header {
+        padding: 16px;
+      }
+      
+      .stat {
+        padding: 10px;
+      }
+      
+      .stat strong {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="phone">
+  <!-- Toast notification -->
+  <div id="toast" class="toast">
+    <span class="icon" id="toast-icon">💧</span>
+    <span class="message" id="toast-message">Đang tưới tự động...</span>
+  </div>
+  
+  <!-- TAB ĐIỀU KHIỂN -->
+  <div id="control">
+    <div class="header">
+      <small>The Theatre of Dreams</small>
+      <h1>Hệ Thống Nông Trại Thông Minh</h1>
+      <div class="stats">
+        <div class="stat"><span>Nhiệt độ</span><strong id="temperature">--°C</strong></div>
+        <div class="stat"><span>Độ ẩm KK</span><strong id="humidity">--%</strong></div>
+        <div class="stat"><span>Độ ẩm đất</span><strong id="soilMoisture">--%</strong></div>
+      </div>
+    </div>
+
+    <div class="section-title">Giám Sát Môi Trường</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:14px;">🌡️ Nhiệt độ</span>
+        <span id="temp-status" style="font-size:13px;font-weight:600;color:var(--green);">Bình thường</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:14px;">💧 Độ ẩm KK</span>
+        <span id="humidity-status" style="font-size:13px;font-weight:600;color:var(--green);">Bình thường</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;">🌱 Độ ẩm đất</span>
+        <span id="soil-status" style="font-size:13px;font-weight:600;color:var(--green);">Đủ ẩm</span>
+      </div>
+    </div>
+
+    <div class="section-title">Tình Trạng Cây Trồng</div>
+    <div class="card" style="padding:12px;">
+      <div class="plant-status">
+        <div class="plant-stat">
+          <div class="label">📏 Chiều cao</div>
+          <div class="value" id="plantHeight">--</div>
+          <div class="sub" id="growth-status">Cây con</div>
+        </div>
+        <div class="plant-stat">
+          <div class="label">🌿 Màu lá</div>
+          <div class="value" id="leaf-color-value" style="font-size:16px;">--</div>
+          <div class="sub" id="leaf-color-status">Chờ dữ liệu</div>
+        </div>
+      </div>
+      <div id="leafColor" style="display:none;"></div>
+    </div>
+
+    <div class="section-title">Điều Khiển Tưới Tiêu</div>
+    <div class="card">
+      <div class="device">
+        <div class="device-info">
+          <div class="icon">💦</div>
+          <div><h4>Chế độ tưới</h4><small id="irrigation-label">Thủ công</small></div>
+        </div>
+        <div class="switch" id="irrigation-switch"></div>
+      </div>
+      <div id="irrigation-manual">
+        <div style="margin:12px 0;">
+          <label style="font-size:13px;display:block;margin-bottom:6px;">⏱️ Thời gian tưới: <strong id="irrigation-time">5 giây</strong></label>
+          <input type="range" id="irrigation-duration" min="0" max="5" step="1" value="0" class="slider">
+        </div>
+        <button id="btn-irrigate" style="width:100%;padding:12px;border:none;border-radius:14px;background:var(--primary);color:#fff;font-weight:600;">Bắt đầu tưới</button>
+      </div>
+      <div id="irrigation-auto" style="display:none;">
+        <p style="font-size:13px;color:var(--secondary);">Hệ thống tự động tưới khi đất &lt; 40% với điều kiện thời tiết</p>
+        <div class="progress-bar" id="irrigation-progress">
+          <div class="progress-bar-fill" id="irrigation-progress-fill"></div>
+        </div>
+        <div class="activity-log" id="irrigation-log">
+          <div style="text-align:center;color:#9ca3af;padding:8px;">Chưa có hoạt động</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Điều Khiển Phân Bón</div>
+    <div class="card">
+      <div class="device">
+        <div class="device-info">
+          <div class="icon">🌿</div>
+          <div><h4>Chế độ bón phân</h4><small id="fertilizer-label">Thủ công</small></div>
+        </div>
+        <div class="switch" id="fertilizer-switch"></div>
+      </div>
+      <div id="fertilizer-manual">
+        <div class="fertilizer-btns">
+          <div class="fert-btn" id="btn-nitrogen">Đạm (N)</div>
+          <div class="fert-btn" id="btn-phosphorus">Lân (P)</div>
+          <div class="fert-btn" id="btn-potassium">Kali (K)</div>
+        </div>
+        <div style="margin:12px 0;">
+          <label style="font-size:13px;display:block;margin-bottom:6px;">⏱️ Thời gian bón: <strong id="fertilizer-time">5</strong> giây</label>
+          <input type="range" id="fertilizer-duration" min="3" max="20" step="1" value="5" class="slider">
+        </div>
+        <button id="btn-fertilize" style="width:100%;padding:12px;border:none;border-radius:14px;background:var(--green);color:#fff;font-weight:600;">Bón phân</button>
+      </div>
+      <div id="fertilizer-auto" style="display:none;">
+        <div class="fertilizer-status-card">
+          <div class="status-header">📊 Phân tích hiện tại</div>
+          
+          <div class="status-row">
+            <span>🌿 Màu lá:</span>
+            <span id="leaf-status-badge" class="badge badge-green">Chờ dữ liệu</span>
+          </div>
+          
+          <div class="status-row">
+            <span>📏 Chiều cao TB:</span>
+            <span id="height-status-text">--cm (Chờ dữ liệu)</span>
+          </div>
+          
+          <div class="status-row">
+            <span>⚗️ Tỉ lệ N:P:K:</span>
+            <span id="npk-ratio-text">--:--:--</span>
+          </div>
+          
+          <!-- Biểu đồ thanh N:P:K -->
+          <div class="npk-bars">
+            <div class="npk-item">
+              <label>Đạm (N)</label>
+              <div class="bar"><div class="n-bar" id="n-bar" style="width:0%"></div></div>
+              <span id="n-percent">0%</span>
+            </div>
+            <div class="npk-item">
+              <label>Lân (P)</label>
+              <div class="bar"><div class="p-bar" id="p-bar" style="width:0%"></div></div>
+              <span id="p-percent">0%</span>
+            </div>
+            <div class="npk-item">
+              <label>Kali (K)</label>
+              <div class="bar"><div class="k-bar" id="k-bar" style="width:0%"></div></div>
+              <span id="k-percent">0%</span>
+            </div>
+          </div>
+          
+          <!-- Timeline -->
+          <div class="fertilizer-timeline">
+            <div class="timeline-bar">
+              <div class="timeline-past" id="timeline-past" style="width:0%"></div>
+              <div class="timeline-marker"></div>
+            </div>
+            <div class="timeline-labels">
+              <span id="timeline-last">Lần trước: --</span>
+              <span id="timeline-next">Tiếp theo: --</span>
+            </div>
+          </div>
+          
+          <!-- Khuyến nghị -->
+          <div id="fertilizer-recommendation" class="recommendation">
+            💡 Đang chờ dữ liệu để phân tích...
+          </div>
+        </div>
+        
+        <div class="progress-bar" id="fertilizer-progress">
+          <div class="progress-bar-fill" id="fertilizer-progress-fill"></div>
+        </div>
+        <div class="activity-log" id="fertilizer-log">
+          <div style="text-align:center;color:#9ca3af;padding:8px;">Chưa có hoạt động</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Điều Khiển Bơm Nước</div>
+    <div class="card">
+      <div class="device">
+        <div class="device-info">
+          <div class="icon">🚰</div>
+          <div><h4>Chế độ bơm</h4><small id="pump-label">Thủ công</small></div>
+        </div>
+        <div class="switch" id="pump-switch"></div>
+      </div>
+      
+      <!-- Điều khiển thủ công -->
+      <div id="pump-manual">
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button id="btn-pump-on" style="flex:1;padding:12px;border:none;border-radius:14px;background:var(--green);color:#fff;font-weight:600;cursor:pointer;">
+            ▶️ Bật Bơm
+          </button>
+          <button id="btn-pump-off" style="flex:1;padding:12px;border:none;border-radius:14px;background:var(--red);color:#fff;font-weight:600;cursor:pointer;">
+            ⏹️ Tắt Bơm
+          </button>
+        </div>
+        <p style="font-size:11px;color:#6b7280;margin-top:8px;text-align:center;">
+          💡 Điều khiển thủ công - Bật/tắt bơm bất cứ lúc nào
+        </p>
+      </div>
+      
+      <!-- Chế độ tự động -->
+      <div id="pump-auto" style="display:none;">
+        <p style="font-size:13px;color:var(--secondary);margin-top:12px;">Hệ thống tự động bật bơm khi &lt; 6L và tắt khi &gt; 14L</p>
+        <div class="activity-log" id="pump-auto-log" style="margin-top:10px;">
+          <div style="text-align:center;color:#9ca3af;padding:8px;">Chưa có hoạt động tự động</div>
+        </div>
+      </div>
+      
+      <!-- Hiển thị mức nước -->
+      <div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:13px;color:#6b7280;">📊 Mức nước hiện tại</span>
+          <span id="water-level-percent" style="font-size:18px;font-weight:700;color:var(--primary);">--%</span>
+        </div>
+        
+        <!-- Biểu đồ thùng nước -->
+        <div style="position:relative;width:100%;height:180px;background:#f3f4f6;border-radius:14px;overflow:hidden;border:2px solid #e5e7eb;">
+          <div id="water-level-fill" style="position:absolute;bottom:0;width:100%;background:linear-gradient(180deg, #3b82f6, #60a5fa);transition:height 0.5s ease;height:0%;display:flex;align-items:center;justify-content:center;"></div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);text-align:center;z-index:10;">
+            <div style="font-size:32px;font-weight:700;color:#1f2937;" id="water-level-liters">-- L</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;">Khoảng cách: <span id="water-distance">--</span> cm</div>
+          </div>
+        </div>
+        
+        <!-- Các mốc mức nước -->
+        <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:#6b7280;">
+          <span>🔴 Thấp (0-6L)</span>
+          <span>🟡 Trung bình (6-14L)</span>
+          <span>🟢 Đủ (14-20L)</span>
+        </div>
+      </div>
+      
+      <!-- Cảnh báo -->
+      <div id="water-warning" class="recommendation danger" style="display:none;margin-top:12px;">
+        ⚠️ Cảnh báo: Mức nước thấp! Vui lòng bơm thêm nước.
+      </div>
+      
+      <!-- Thông tin bổ sung -->
+      <div style="background:#f9fafb;padding:12px;border-radius:12px;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e5e7eb;">
+          <span style="font-size:12px;color:#6b7280;">Dung tích thùng:</span>
+          <span style="font-size:12px;font-weight:600;color:#1f2937;">20 lít</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e5e7eb;">
+          <span style="font-size:12px;color:#6b7280;">Chiều cao thùng:</span>
+          <span style="font-size:12px;font-weight:600;color:#1f2937;">30 cm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;">
+          <span style="font-size:12px;color:#6b7280;">Trạng thái bơm:</span>
+          <span id="pump-state" style="font-size:12px;font-weight:600;color:var(--green);">Tắt</span>
+        </div>
+      </div>
+      
+      <!-- Nhật ký hoạt động -->
+      <div class="activity-log" id="pump-log" style="margin-top:12px;display:none;">
+        <div style="text-align:center;color:#9ca3af;padding:8px;">Chưa có hoạt động</div>
+      </div>
+    </div>
+
+    <div class="section-title">Trạng Thái Hệ Thống</div>
+    <div class="card">
+      <div class="status-dots">
+        <div class="status-item"><div class="dot" id="status-irrigation"></div><span>Tưới tiêu</span></div>
+        <div class="status-item"><div class="dot" id="status-fertilizer"></div><span>Bón phân</span></div>
+        <div class="status-item"><div class="dot" id="status-pump"></div><span>Bơm nước</span></div>
+        <div class="status-item"><div class="dot" id="status-connection"></div><span>Kết nối</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB PHÂN TÍCH -->
+  <div id="analytics" style="display:none;">
+    <div class="section-title">Phân tích môi trường</div>
+    <div class="chart-card">
+      <canvas id="tempChart"></canvas>
+      <p class="comment" id="temp-comment">Đang chờ dữ liệu...</p>
+    </div>
+    <div class="chart-card">
+      <canvas id="humChart"></canvas>
+      <p class="comment" id="hum-comment">Đang chờ dữ liệu...</p>
+    </div>
+    <div class="chart-card">
+      <canvas id="soilChart"></canvas>
+      <p class="comment" id="soil-comment">Đang chờ dữ liệu...</p>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="nav">
+    <span id="tabControl" class="active">Điều khiển</span>
+    <span id="tabAnalytics">Phân tích</span>
+  </div>
+</div>
+
+<script>
+  const eraWidget = new EraWidget();
+  let realtimeConfigs = new Array(6).fill(null);
+  let actionConfigs = new Array(10).fill(null);
+  let isConfigured = false;
+  let initialized = false;
+  let irrigationMode = localStorage.getItem('irrigationMode') || "manual";
+  let fertilizerMode = localStorage.getItem('fertilizerMode') || "manual";
+  let irrigationDuration = 5; // Mặc định 5 giây
+  let fertilizerDuration = 5;
+  
+  // Map slider values to actual durations: 0=5s, 1=10min, 2=20min, 3=30min, 4=40min, 5=60min
+  const irrigationDurations = [5, 600, 1200, 1800, 2400, 3600];
+  const irrigationLabels = ["5 giây", "10 phút", "20 phút", "30 phút", "40 phút", "60 phút"];
+  let fertilizers = {nitrogen: false, phosphorus: false, potassium: false};
+  let isIrrigating = false;
+  let isFertilizing = false;
+  let lastFertilizeTime = localStorage.getItem('lastFertilizeTime') ? new Date(localStorage.getItem('lastFertilizeTime')) : new Date(0);
+  const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+  const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
+  
+  // Water pump variables
+  let pumpMode = localStorage.getItem('pumpMode') || "manual";
+  let waterDistance = 0; // Khoảng cách từ cảm biến đến mặt nước (cm)
+  const TANK_HEIGHT = 30; // Chiều cao thùng nước (cm)
+  const TANK_CAPACITY = 20; // Dung tích thùng (lít)
+  const SENSOR_OFFSET = 5; // Khoảng cách từ đỉnh thùng đến cảm biến (cm)
+
+  // Màu sắc lá từ V10
+  const LEAF_COLOR = {
+    XANHLA: 'xanhla',
+    VANG: 'vang',
+    DO: 'do'
+  };
+
+  const sensorMap = ['temperature', 'humidity', 'soilMoisture', 'plantHeight', 'waterDistance', 'leafColor'];
+  const sensorUnits = ['°C', '%', '%', 'cm', 'cm', ''];
+
+  const pinMap = {
+    irrigateOff: 0,
+    irrigateOn: 1,
+    nitrogenOff: 2,
+    nitrogenOn: 3,
+    phosphorusOff: 4,
+    phosphorusOn: 5,
+    potassiumOff: 6,
+    potassiumOn: 7,
+    pumpOff: 8,
+    pumpOn: 9
+  };
+
+  // Toast notification function
+  function showToast(icon, message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    const toastIcon = document.getElementById('toast-icon');
+    const toastMessage = document.getElementById('toast-message');
+    
+    toastIcon.textContent = icon;
+    toastMessage.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
+  
+  // Add log entry
+  function addLogEntry(logId, message) {
+    const log = document.getElementById(logId);
+    if (!log) return;
+    
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                    now.getMinutes().toString().padStart(2, '0') + ':' + 
+                    now.getSeconds().toString().padStart(2, '0');
+    
+    // Remove placeholder if exists
+    if (log.querySelector('[style*="text-align:center"]')) {
+      log.innerHTML = '';
+    }
+    
+    const logItem = document.createElement('div');
+    logItem.className = 'log-item';
+    logItem.innerHTML = `<span class="log-time">${timeStr}</span> - ${message}`;
+    
+    log.insertBefore(logItem, log.firstChild);
+    
+    // Keep only last 5 entries
+    while (log.children.length > 5) {
+      log.removeChild(log.lastChild);
+    }
+  }
+  
+  // Progress bar animation
+  function animateProgress(progressId, fillId, duration) {
+    const progress = document.getElementById(progressId);
+    const fill = document.getElementById(fillId);
+    
+    if (!progress || !fill) return;
+    
+    progress.classList.add('active');
+    fill.style.width = '0%';
+    
+    let elapsed = 0;
+    const interval = 100; // Update every 100ms
+    const steps = duration / interval;
+    
+    const timer = setInterval(() => {
+      elapsed += interval;
+      const percent = Math.min((elapsed / duration) * 100, 100);
+      fill.style.width = percent + '%';
+      
+      if (elapsed >= duration) {
+        clearInterval(timer);
+        setTimeout(() => {
+          progress.classList.remove('active');
+          fill.style.width = '0%';
+        }, 500);
+      }
+    }, interval);
+  }
+
+  // Update fertilizer status display
+  function updateFertilizerStatus() {
+    // Get data
+    const avgHeight = parseFloat(document.getElementById('plantHeight').textContent) || 0;
+    
+    const leafColorRaw = document.getElementById('leafColor') ? 
+                         document.getElementById('leafColor').textContent.trim() : '';
+    const leafColor = leafColorRaw.toLowerCase();
+    
+    // Update leaf status badge
+    const badge = document.getElementById('leaf-status-badge');
+    if (badge) {
+      badge.className = 'badge';
+      if (leafColor === LEAF_COLOR.XANHLA) {
+        badge.className = 'badge badge-green';
+        badge.textContent = '🌿 Xanh khỏe ✅';
+      } else if (leafColor === LEAF_COLOR.VANG) {
+        badge.className = 'badge badge-yellow';
+        badge.textContent = '⚠️ Vàng thiếu dinh dưỡng';
+      } else if (leafColor === LEAF_COLOR.DO) {
+        badge.className = 'badge badge-red';
+        badge.textContent = '🚨 Đỏ/Chết';
+      } else {
+        badge.className = 'badge';
+        badge.style.background = '#e5e7eb';
+        badge.style.color = '#6b7280';
+        badge.textContent = 'Chờ dữ liệu';
+      }
+    }
+    
+    // Update height status
+    const heightStatus = document.getElementById('height-status-text');
+    if (heightStatus && avgHeight > 0) {
+      let stage = 'Cây con';
+      if (avgHeight > 3 && avgHeight <= 10) stage = 'Đang phát triển';
+      else if (avgHeight > 10) stage = 'Có thể thu hoạch';
+      heightStatus.textContent = `${avgHeight.toFixed(1)}cm (${stage})`;
+    }
+    
+    // Calculate NPK ratio
+    let ratios = {nitrogen: 1, phosphorus: 1, potassium: 1};
+    let totalRatio = 3;
+    let recommendation = '';
+    let recClass = 'recommendation';
+    
+    if (leafColor === LEAF_COLOR.DO) {
+      ratios = {nitrogen: 1, phosphorus: 2, potassium: 1};
+      totalRatio = 4;
+      recommendation = '🚨 KHẨN CẤP: Lá đỏ/chết! Bón phân ngay để phục hồi rễ. Tăng Lân (P) giúp cây hồi phục.';
+      recClass = 'recommendation danger';
+    } else if (leafColor === LEAF_COLOR.VANG) {
+      if (avgHeight <= 3) {
+        ratios = {nitrogen: 3, phosphorus: 1, potassium: 1};
+        totalRatio = 5;
+        recommendation = '⚠️ Lá vàng - cây con: Tăng Đạm (N) để lá xanh khỏe hơn. Bón mỗi 3 ngày.';
+      } else if (avgHeight > 3 && avgHeight <= 10) {
+        ratios = {nitrogen: 3, phosphorus: 2, potassium: 2};
+        totalRatio = 7;
+        recommendation = '⚠️ Lá vàng - đang lớn: Cần tăng cường Đạm (N) kết hợp Lân-Kali để cây phát triển toàn diện.';
+      } else {
+        ratios = {nitrogen: 2, phosphorus: 1, potassium: 3};
+        totalRatio = 6;
+        recommendation = '⚠️ Lá vàng - gần thu hoạch: Tăng Kali (K) cho quả, bổ sung Đạm (N) cho lá.';
+      }
+      recClass = 'recommendation warning';
+    } else if (leafColor === LEAF_COLOR.XANHLA) {
+      if (avgHeight <= 3) {
+        ratios = {nitrogen: 1, phosphorus: 1, potassium: 1};
+        totalRatio = 3;
+        recommendation = '✅ Cây con khỏe mạnh: Bón phân cân bằng 1:1:1, định kỳ 1 tuần/lần.';
+      } else if (avgHeight > 3 && avgHeight <= 10) {
+        ratios = {nitrogen: 2, phosphorus: 1, potassium: 2};
+        totalRatio = 5;
+        recommendation = '✅ Cây đang phát triển tốt: Tăng Đạm (N) cho lá, Kali (K) cho thân. Bón 1 tuần/lần.';
+      } else {
+        ratios = {nitrogen: 1, phosphorus: 1, potassium: 2};
+        totalRatio = 4;
+        recommendation = '✅ Cây gần thu hoạch: Tăng Kali (K) để quả chất lượng, giảm Đạm để không sum lá. Bón 1 tuần/lần.';
+      }
+      recClass = 'recommendation';
+    } else {
+      recommendation = '💡 Đang chờ dữ liệu màu lá và chiều cao để phân tích...';
+    }
+    
+    // Update NPK ratio text
+    const ratioText = document.getElementById('npk-ratio-text');
+    if (ratioText) {
+      ratioText.textContent = `${ratios.nitrogen}:${ratios.phosphorus}:${ratios.potassium}`;
+    }
+    
+    // Update NPK bars
+    const nPercent = Math.round((ratios.nitrogen / totalRatio) * 100);
+    const pPercent = Math.round((ratios.phosphorus / totalRatio) * 100);
+    const kPercent = Math.round((ratios.potassium / totalRatio) * 100);
+    
+    const nBar = document.getElementById('n-bar');
+    const pBar = document.getElementById('p-bar');
+    const kBar = document.getElementById('k-bar');
+    const nText = document.getElementById('n-percent');
+    const pText = document.getElementById('p-percent');
+    const kText = document.getElementById('k-percent');
+    
+    if (nBar) nBar.style.width = nPercent + '%';
+    if (pBar) pBar.style.width = pPercent + '%';
+    if (kBar) kBar.style.width = kPercent + '%';
+    if (nText) nText.textContent = nPercent + '%';
+    if (pText) pText.textContent = pPercent + '%';
+    if (kText) kText.textContent = kPercent + '%';
+    
+    // Update timeline
+    const now = new Date();
+    const timeSinceLast = now - lastFertilizeTime;
+    
+    let fertilizeInterval = ONE_WEEK;
+    if (leafColor === LEAF_COLOR.DO) fertilizeInterval = 0;
+    else if (leafColor === LEAF_COLOR.VANG) fertilizeInterval = THREE_DAYS;
+    
+    const timeRemaining = Math.max(0, fertilizeInterval - timeSinceLast);
+    const progressPercent = fertilizeInterval > 0 ? Math.min((timeSinceLast / fertilizeInterval) * 100, 100) : 0;
+    
+    const timelinePast = document.getElementById('timeline-past');
+    const timelineLast = document.getElementById('timeline-last');
+    const timelineNext = document.getElementById('timeline-next');
+    
+    if (timelinePast) timelinePast.style.width = progressPercent + '%';
+    
+    if (timelineLast) {
+      if (lastFertilizeTime.getTime() === 0) {
+        timelineLast.textContent = 'Lần trước: Chưa có';
+      } else {
+        const days = Math.floor(timeSinceLast / (24*60*60*1000));
+        const hours = Math.floor((timeSinceLast % (24*60*60*1000)) / (60*60*1000));
+        if (days > 0) {
+          timelineLast.textContent = `Lần trước: ${days} ngày trước`;
+        } else {
+          timelineLast.textContent = `Lần trước: ${hours} giờ trước`;
+        }
+      }
+    }
+    
+    if (timelineNext) {
+      if (timeRemaining === 0) {
+        timelineNext.textContent = 'Tiếp theo: Ngay bây giờ!';
+      } else {
+        const days = Math.floor(timeRemaining / (24*60*60*1000));
+        const hours = Math.floor((timeRemaining % (24*60*60*1000)) / (60*60*1000));
+        if (days > 0) {
+          timelineNext.textContent = `Tiếp theo: ${days} ngày nữa`;
+        } else {
+          timelineNext.textContent = `Tiếp theo: ${hours} giờ nữa`;
+        }
+      }
+    }
+    
+    // Update recommendation
+    const recEl = document.getElementById('fertilizer-recommendation');
+    if (recEl) {
+      recEl.textContent = recommendation;
+      recEl.className = recClass;
+    }
+  }
+
+  // Lịch sử dữ liệu cho biểu đồ
+  const history = { temp: [], hum: [], soil: [], labels: [] };
+  const maxPoints = 48;
+
+  let tempChart, humChart, soilChart;
+
+  function addDataToHistory(temp, hum, soil) {
+    const now = new Date();
+    const timeLabel = now.getHours() + 'h';
+
+    console.log(`📈 Adding to history: Temp=${temp}°C, Hum=${hum}%, Soil=${soil}%`);
+
+    history.temp.push(temp);
+    history.hum.push(hum);
+    history.soil.push(soil);
+    history.labels.push(timeLabel);
+
+    if (history.temp.length > maxPoints) {
+      history.temp.shift(); history.hum.shift(); history.soil.shift(); history.labels.shift();
+    }
+
+    if (tempChart) {
+      tempChart.data.labels = history.labels;
+      tempChart.data.datasets[0].data = history.temp;
+      tempChart.update('quiet');
+    }
+    if (humChart) {
+      humChart.data.labels = history.labels;
+      humChart.data.datasets[0].data = history.hum;
+      humChart.update('quiet');
+    }
+    if (soilChart) {
+      soilChart.data.labels = history.labels;
+      soilChart.data.datasets[0].data = history.soil;
+      soilChart.update('quiet');
+    }
+
+    updateComments(temp, hum, soil);
+  }
+
+  function updateComments(temp, hum, soil) {
+    let tempComment = "Nhiệt độ ổn định.";
+    if (temp > 33) tempComment = "🔥 Nhiệt độ tăng cao vào buổi trưa, cần ưu tiên bật quạt thông gió từ 11h–15h.";
+    else if (temp > 30) tempComment = "Nhiệt độ hơi cao, theo dõi thêm.";
+
+    let humComment = "Độ ẩm không khí đang ở mức phù hợp cho cây trồng.";
+    if (hum > 85) humComment = "💧 Độ ẩm không khí cao, có nguy cơ nấm bệnh.";
+    else if (hum < 40) humComment = "🏜️ Độ ẩm không khí thấp, cần tăng độ ẩm.";
+
+    let soilComment = "Độ ẩm đất đang ở mức tốt.";
+    if (soil < 40) soilComment = "🌱 Độ ẩm đất giảm, nên tưới nước trong khung giờ sáng sớm.";
+    else if (soil > 80) soilComment = "🌧️ Độ ẩm đất cao, tạm dừng tưới để tránh úng.";
+
+    document.getElementById('temp-comment').textContent = tempComment;
+    document.getElementById('hum-comment').textContent = humComment;
+    document.getElementById('soil-comment').textContent = soilComment;
+  }
+
+  function initCharts() {
+    const ctx1 = document.getElementById('tempChart');
+    const ctx2 = document.getElementById('humChart');
+    const ctx3 = document.getElementById('soilChart');
+
+    if (!ctx1 || !ctx2 || !ctx3) {
+      console.error("❌ Không tìm thấy canvas elements");
+      return;
+    }
+
+    tempChart = new Chart(ctx1.getContext('2d'), {
+      type: 'line',
+      data: { 
+        labels: history.labels.length > 0 ? history.labels : ['Chờ dữ liệu'], 
+        datasets: [{ 
+          label: 'Nhiệt độ (°C)', 
+          data: history.temp.length > 0 ? history.temp : [0], 
+          borderColor: '#4f7cff', 
+          tension: 0.4, 
+          fill: false 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { legend: { display: true } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 50
+          }
+        }
+      }
+    });
+
+    humChart = new Chart(ctx2.getContext('2d'), {
+      type: 'bar',
+      data: { 
+        labels: history.labels.length > 0 ? history.labels : ['Chờ dữ liệu'], 
+        datasets: [{ 
+          label: 'Độ ẩm KK (%)', 
+          data: history.hum.length > 0 ? history.hum : [0], 
+          backgroundColor: '#93c5fd' 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { legend: { display: true } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    });
+
+    soilChart = new Chart(ctx3.getContext('2d'), {
+      type: 'line',
+      data: { 
+        labels: history.labels.length > 0 ? history.labels : ['Chờ dữ liệu'], 
+        datasets: [{ 
+          label: 'Độ ẩm đất (%)', 
+          data: history.soil.length > 0 ? history.soil : [0], 
+          borderColor: '#22c55e', 
+          tension: 0.4, 
+          fill: false 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { legend: { display: true } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    });
+    
+    console.log("✅ Biểu đồ đã được khởi tạo");
+  }
+
+  function setIndicator(id, active) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('active', active);
+      el.classList.toggle('blinking', active);
+    }
+  }
+
+  function setStatus(id, condition, trueText, falseText, trueColor = 'var(--red)', falseColor = 'var(--green)') {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = condition ? trueText : falseText;
+      el.style.color = condition ? trueColor : falseColor;
+    }
+  }
+
+  function updateSensorDisplay(index, value) {
+    if (index >= 0 && index < sensorMap.length && value !== null && !isNaN(value)) {
+      const el = document.getElementById(sensorMap[index]);
+      if (el) {
+        if (index === 3) {
+          // Chiều cao cây - hiển thị đơn vị cm nhỏ hơn
+          el.innerHTML = value.toFixed(1) + '<span style="font-size:12px;font-weight:500;"> cm</span>';
+        } else {
+          el.textContent = value.toFixed(1) + " " + sensorUnits[index];
+        }
+      }
+    }
+  }
+
+  function updateGrowthStatus(value) {
+    if (value !== null && !isNaN(value)) {
+      let stage = "Cây con";
+      if (value > 3 && value <= 10) stage = "Đang phát triển";
+      else if (value > 10) stage = "Có thể thu hoạch";
+      const el = document.getElementById("growth-status");
+      if (el) el.textContent = stage;
+    }
+  }
+
+  function updateLeafColorDisplay(colorString) {
+    const valueEl = document.getElementById('leaf-color-value');
+    const statusEl = document.getElementById('leaf-color-status');
+    if (!valueEl || !statusEl) return;
+
+    const color = (colorString || '').toLowerCase().trim();
+
+    if (color === LEAF_COLOR.XANHLA) {
+      valueEl.textContent = colorString; // Hiển thị string gốc
+      valueEl.style.color = '#22c55e';
+      statusEl.textContent = 'Xanh khỏe';
+      statusEl.style.color = '#22c55e';
+    } else if (color === LEAF_COLOR.VANG) {
+      valueEl.textContent = colorString; // Hiển thị string gốc
+      valueEl.style.color = '#eab308';
+      statusEl.textContent = 'Vàng - thiếu DD';
+      statusEl.style.color = '#eab308';
+    } else if (color === LEAF_COLOR.DO) {
+      valueEl.textContent = colorString; // Hiển thị string gốc
+      valueEl.style.color = '#ef4444';
+      statusEl.textContent = 'Đỏ/Chết';
+      statusEl.style.color = '#ef4444';
+    } else {
+      valueEl.textContent = '--';
+      valueEl.style.color = '#6b7280';
+      statusEl.textContent = 'Chờ dữ liệu';
+      statusEl.style.color = '#6b7280';
+    }
+  }
+
+  // Duration được xử lý bằng setTimeout trong code, không cần gửi qua pin riêng
+
+  function controlIrrigation(state) {
+    irrigationMode = state ? "auto" : "manual";
+    localStorage.setItem('irrigationMode', irrigationMode);
+    document.getElementById('irrigation-label').textContent = irrigationMode === "auto" ? "Tự động" : "Thủ công";
+    document.getElementById('irrigation-manual').style.display = state ? 'none' : 'block';
+    document.getElementById('irrigation-auto').style.display = state ? 'block' : 'none';
+    document.getElementById('irrigation-switch').classList.toggle('active', state);
+  }
+
+  function controlFertilizer(state) {
+    fertilizerMode = state ? "auto" : "manual";
+    localStorage.setItem('fertilizerMode', fertilizerMode);
+    document.getElementById('fertilizer-label').textContent = fertilizerMode === "auto" ? "Tự động" : "Thủ công";
+    document.getElementById('fertilizer-manual').style.display = state ? 'none' : 'block';
+    document.getElementById('fertilizer-auto').style.display = state ? 'block' : 'none';
+    document.getElementById('fertilizer-switch').classList.toggle('active', state);
+  }
+
+  function toggleFert(key) {
+    if (fertilizerMode !== "manual") return;
+    fertilizers[key] = !fertilizers[key];
+    document.getElementById('btn-' + key).classList.toggle('active', fertilizers[key]);
+  }
+
+  function startManualIrrigation() {
+    if (irrigationMode !== "manual" || isIrrigating) {
+      console.log("Không thể tưới: đang ở chế độ auto hoặc đang tưới");
+      return;
+    }
+
+    const duration = irrigationDuration; // Lưu giá trị duration ngay lập tức
+    console.log(`Bắt đầu tưới thủ công: ${duration} giây`);
+
+    isIrrigating = true;
+    setIndicator("status-irrigation", true);
+
+    const onConfig = actionConfigs[pinMap.irrigateOn];
+    if (isConfigured && onConfig) {
+      eraWidget.triggerAction(onConfig.action, 0, {value: 1});
+      console.log("Relay TƯỚI ON đã gửi");
+    }
+
+    setTimeout(() => {
+      isIrrigating = false;
+      setIndicator("status-irrigation", false);
+
+      const offIndex = pinMap.irrigateOn - 1;
+      const offConfig = actionConfigs[offIndex];
+      if (isConfigured && offConfig) {
+        eraWidget.triggerAction(offConfig.action, 0, {value: 0});
+        console.log(`Relay TƯỚI OFF đã gửi sau ${duration} giây`);
+      } else {
+        console.warn(`Không tìm thấy action OFF cho tưới tại index ${offIndex}!`);
+      }
+    }, duration * 1000 + 500);
+  }
+
+  function startAutoIrrigation(duration) {
+    if (irrigationMode !== "auto" || isIrrigating) {
+      return;
+    }
+
+    console.log(`Bắt đầu tưới tự động: ${duration} giây`);
+    
+    // Show toast notification
+    showToast('💧', `Tưới tự động: ${Math.round(duration/60)} phút`);
+    
+    // Add log entry
+    addLogEntry('irrigation-log', `Bắt đầu tưới ${Math.round(duration/60)} phút (độ ẩm đất thấp)`);
+    
+    // Animate progress bar
+    animateProgress('irrigation-progress', 'irrigation-progress-fill', duration * 1000);
+
+    isIrrigating = true;
+    setIndicator("status-irrigation", true);
+
+    const onConfig = actionConfigs[pinMap.irrigateOn];
+    if (isConfigured && onConfig) {
+      eraWidget.triggerAction(onConfig.action, 0, {value: 1});
+      console.log("Relay TƯỚI ON đã gửi (auto)");
+    }
+
+    setTimeout(() => {
+      isIrrigating = false;
+      setIndicator("status-irrigation", false);
+
+      const offIndex = pinMap.irrigateOn - 1;
+      const offConfig = actionConfigs[offIndex];
+      if (isConfigured && offConfig) {
+        eraWidget.triggerAction(offConfig.action, 0, {value: 0});
+        console.log(`Relay TƯỚI OFF đã gửi sau ${duration} giây (auto)`);
+      }
+      
+      // Add completion log
+      addLogEntry('irrigation-log', `✓ Hoàn thành tưới`);
+    }, duration * 1000 + 500);
+  }
+
+  function startFertilize() {
+    if (fertilizerMode !== "manual" || isFertilizing) return;
+    const selected = Object.keys(fertilizers).filter(k => fertilizers[k]);
+    if (selected.length === 0) return;
+
+    selected.forEach(key => {
+      const config = actionConfigs[pinMap[key + 'On']];
+      if (isConfigured && config) eraWidget.triggerAction(config.action, 0, {value: 1});
+    });
+
+    isFertilizing = true;
+    setIndicator("status-fertilizer", true);
+
+    setTimeout(() => {
+      selected.forEach(key => {
+        const offIndex = pinMap[key + 'On'] - 1;
+        const offConfig = actionConfigs[offIndex];
+        if (isConfigured && offConfig) eraWidget.triggerAction(offConfig.action, 0, {value: 0});
+      });
+      isFertilizing = false;
+      setIndicator("status-fertilizer", false);
+    }, fertilizerDuration * 1000 + 500);
+  }
+
+  function triggerAutoFertilize() {
+    if (fertilizerMode !== "auto" || isFertilizing) return;
+    
+    const now = new Date();
+    
+    // Lấy dữ liệu chiều cao
+    const avgHeight = parseFloat(document.getElementById('plantHeight').textContent) || 0;
+    
+    // Lấy màu sắc lá từ V10
+    const leafColorRaw = document.getElementById('leafColor') ? 
+                         document.getElementById('leafColor').textContent.trim() : '';
+    const leafColor = leafColorRaw.toLowerCase();
+    
+    // Xác định tần suất bón phân dựa trên màu lá
+    let fertilizeInterval = ONE_WEEK;
+    let urgency = "Bình thường";
+    
+    if (leafColor === LEAF_COLOR.DO) {
+      fertilizeInterval = 0; // Bón ngay lập tức
+      urgency = "Khẩn cấp";
+      console.warn("🚨 CẤP CỨU: Lá đỏ/chết - Bón phân khẩn cấp!");
+    } else if (leafColor === LEAF_COLOR.VANG) {
+      fertilizeInterval = THREE_DAYS;
+      urgency = "Cần chú ý";
+      console.warn("⚠️ CẢNH BÁO: Lá vàng thiếu dinh dưỡng - Tăng tần suất bón (3 ngày)");
+    }
+    
+    // Kiểm tra thời gian
+    if (now - lastFertilizeTime < fertilizeInterval) return;
+    
+    // Xác định tỷ lệ N:P:K dựa trên màu lá + chiều cao
+    let ratios = {nitrogen: 1, phosphorus: 1, potassium: 1};
+    let totalRatio = 3;
+    let totalTime = 12;
+    let ratioStr = "";
+    
+    if (leafColor === LEAF_COLOR.DO) {
+      // Lá đỏ/chết → Tăng Lân (P) phục hồi rễ
+      ratios = {nitrogen: 1, phosphorus: 2, potassium: 1};
+      totalRatio = 4;
+      totalTime = 15;
+      ratioStr = "1:2:1 (Phục hồi)";
+      console.log("📊 N:P:K = 1:2:1 (Phục hồi rễ - 15s)");
+      
+    } else if (leafColor === LEAF_COLOR.VANG) {
+      // Lá vàng → Thiếu Đạm (N)
+      if (avgHeight <= 3) {
+        ratios = {nitrogen: 3, phosphorus: 1, potassium: 1};
+        totalRatio = 5;
+        ratioStr = "3:1:1";
+      } else if (avgHeight > 3 && avgHeight <= 10) {
+        ratios = {nitrogen: 3, phosphorus: 2, potassium: 2};
+        totalRatio = 7;
+        ratioStr = "3:2:2";
+      } else {
+        ratios = {nitrogen: 2, phosphorus: 1, potassium: 3};
+        totalRatio = 6;
+        ratioStr = "2:1:3";
+      }
+      totalTime = 14;
+      console.log(`📊 Lá vàng - Tăng Đạm: N:P:K = ${ratios.nitrogen}:${ratios.phosphorus}:${ratios.potassium} (14s)`);
+      
+    } else {
+      // Lá xanh khỏe mạnh → Logic theo chiều cao
+      if (avgHeight <= 3) {
+        ratios = {nitrogen: 1, phosphorus: 1, potassium: 1};
+        totalRatio = 3;
+        ratioStr = "1:1:1";
+      } else if (avgHeight > 3 && avgHeight <= 10) {
+        ratios = {nitrogen: 2, phosphorus: 1, potassium: 2};
+        totalRatio = 5;
+        ratioStr = "2:1:2";
+      } else {
+        ratios = {nitrogen: 1, phosphorus: 1, potassium: 2};
+        totalRatio = 4;
+        ratioStr = "1:1:2";
+      }
+      console.log(`✅ Lá xanh - N:P:K = ${ratios.nitrogen}:${ratios.phosphorus}:${ratios.potassium} (12s)`);
+    }
+    
+    // Show toast notification
+    showToast('🌿', `Bón phân tự động: ${ratioStr} (${urgency})`);
+    
+    // Add log entry
+    addLogEntry('fertilizer-log', `Bón phân ${ratioStr} - Màu lá: ${leafColor || 'N/A'}, Cao TB: ${avgHeight.toFixed(1)}cm`);
+    
+    // Animate progress bar
+    animateProgress('fertilizer-progress', 'fertilizer-progress-fill', totalTime * 1000);
+    
+    const keys = ['nitrogen', 'phosphorus', 'potassium'];
+    
+    // Bật relay tất cả
+    keys.forEach(key => {
+      const config = actionConfigs[pinMap[key + 'On']];
+      if (isConfigured && config) {
+        eraWidget.triggerAction(config.action, 0, {value: 1});
+      }
+    });
+    
+    isFertilizing = true;
+    setIndicator("status-fertilizer", true);
+    
+    // Tắt từng relay theo thời gian riêng
+    keys.forEach(key => {
+      const dur = Math.round((ratios[key] / totalRatio) * totalTime);
+      setTimeout(() => {
+        const offConfig = actionConfigs[pinMap[key + 'On'] - 1];
+        if (isConfigured && offConfig) {
+          eraWidget.triggerAction(offConfig.action, 0, {value: 0});
+          console.log(`✅ Tắt ${key} sau ${dur}s`);
+        }
+      }, dur * 1000);
+    });
+    
+    // Reset trạng thái
+    const maxDur = Math.max(...keys.map(k => Math.round((ratios[k]/totalRatio)*totalTime)));
+    setTimeout(() => {
+      isFertilizing = false;
+      setIndicator("status-fertilizer", false);
+      lastFertilizeTime = now;
+      localStorage.setItem('lastFertilizeTime', now.toISOString());
+      console.log(`🎯 Bón phân hoàn tất - Cao TB: ${avgHeight.toFixed(1)}cm, Màu: ${leafColor || 'N/A'}`);
+      
+      // Add completion log
+      addLogEntry('fertilizer-log', `✓ Hoàn thành bón phân`);
+    }, maxDur * 1000 + 500);
+  }
+
+  // ========== WATER PUMP CONTROL FUNCTIONS ==========
+  
+  function updateWaterLevel(distance) {
+    waterDistance = distance;
+    
+    // Tính toán mức nước
+    // Khoảng cách càng nhỏ = mức nước càng cao
+    let waterHeight = TANK_HEIGHT - (distance - SENSOR_OFFSET);
+    waterHeight = Math.max(0, Math.min(TANK_HEIGHT, waterHeight));
+    
+    // Tính lít nước
+    let waterLiters = (waterHeight / TANK_HEIGHT) * TANK_CAPACITY;
+    waterLiters = Math.max(0, Math.min(TANK_CAPACITY, waterLiters));
+    
+    // Tính phần trăm
+    let waterPercent = (waterLiters / TANK_CAPACITY) * 100;
+    
+    // Update UI
+    const waterDistanceEl = document.getElementById('water-distance');
+    const waterPercentEl = document.getElementById('water-level-percent');
+    const waterLitersEl = document.getElementById('water-level-liters');
+    const waterFillEl = document.getElementById('water-level-fill');
+    const waterWarningEl = document.getElementById('water-warning');
+    
+    if (waterDistanceEl) waterDistanceEl.textContent = distance.toFixed(1);
+    if (waterPercentEl) waterPercentEl.textContent = waterPercent.toFixed(0) + '%';
+    if (waterLitersEl) waterLitersEl.textContent = waterLiters.toFixed(1) + ' L';
+    if (waterFillEl) waterFillEl.style.height = waterPercent + '%';
+    
+    // Update status text and color
+    const statusText = document.getElementById('pump-status-text');
+    
+    if (waterLiters < 6) {
+      if (statusText) statusText.textContent = 'Mức nước thấp';
+      if (waterPercentEl) waterPercentEl.style.color = '#ef4444';
+      if (waterWarningEl) waterWarningEl.style.display = 'block';
+      
+      // Auto turn on pump if in auto mode
+      if (pumpMode === "auto" && !document.getElementById('status-pump').classList.contains('active')) {
+        turnOnPump();
+        addLogEntry('pump-auto-log', '⬆️ Tự động bật bơm - Mức nước < 6L');
+      }
+    } else if (waterLiters < 14) {
+      if (statusText) statusText.textContent = 'Mức nước trung bình';
+      if (waterPercentEl) waterPercentEl.style.color = '#f59e0b';
+      if (waterWarningEl) waterWarningEl.style.display = 'none';
+    } else {
+      if (statusText) statusText.textContent = 'Mức nước đầy';
+      if (waterPercentEl) waterPercentEl.style.color = '#22c55e';
+      if (waterWarningEl) waterWarningEl.style.display = 'none';
+      
+      // Auto turn off pump if full and in auto mode
+      if (pumpMode === "auto" && document.getElementById('status-pump').classList.contains('active')) {
+        turnOffPump();
+        addLogEntry('pump-auto-log', '⬇️ Tự động tắt bơm - Mức nước > 14L');
+      }
+    }
+  }
+  
+  function controlPump(state) {
+    pumpMode = state ? "auto" : "manual";
+    localStorage.setItem('pumpMode', pumpMode);
+    document.getElementById('pump-label').textContent = pumpMode === "auto" ? "Tự động" : "Thủ công";
+    document.getElementById('pump-manual').style.display = state ? 'none' : 'block';
+    document.getElementById('pump-auto').style.display = state ? 'block' : 'none';
+    document.getElementById('pump-switch').classList.toggle('active', state);
+    
+    if (state) {
+      addLogEntry('pump-log', 'Chuyển sang chế độ tự động');
+      showToast('🚰', 'Bật chế độ tự động bơm nước');
+    } else {
+      addLogEntry('pump-log', 'Chuyển sang chế độ thủ công');
+      showToast('🚰', 'Chuyển sang chế độ thủ công');
+    }
+  }
+  
+  function turnOnPump() {
+    console.log('Bật bơm nước');
+    setIndicator('status-pump', true);
+    document.getElementById('pump-state').textContent = 'Đang bơm';
+    document.getElementById('pump-state').style.color = '#ef4444';
+    
+    const onConfig = actionConfigs[pinMap.pumpOn];
+    if (isConfigured && onConfig) {
+      eraWidget.triggerAction(onConfig.action, 0, {value: 1});
+      console.log('Bơm ON đã gửi qua D9');
+    }
+    
+    const mode = pumpMode === "auto" ? "(Tự động)" : "(Thủ công)";
+    addLogEntry('pump-log', `⬆️ Bắt bơm ${mode}`);
+    showToast('🚰', 'Bắt đầu bơm nước vào thùng');
+  }
+  
+  function turnOffPump() {
+    console.log('Tắt bơm nước');
+    setIndicator('status-pump', false);
+    document.getElementById('pump-state').textContent = 'Tắt';
+    document.getElementById('pump-state').style.color = '#22c55e';
+    
+    const offIndex = pinMap.pumpOn - 1;
+    const offConfig = actionConfigs[offIndex];
+    if (isConfigured && offConfig) {
+      eraWidget.triggerAction(offConfig.action, 0, {value: 0});
+      console.log('Bơm OFF đã gửi qua D8');
+    }
+    
+    const mode = pumpMode === "auto" ? "(Tự động)" : "(Thủ công)";
+    addLogEntry('pump-log', `⬇️ Tắt bơm ${mode}`);
+    showToast('🚰', 'Dừng bơm nước');
+  }
+
+  eraWidget.init({
+    onConfiguration: (cfg) => {
+      console.log('🔧 === CONFIGURATION RECEIVED ===');
+      console.log('📊 Total realtime_configs:', cfg.realtime_configs.length);
+      console.log('⚡ Total actions:', cfg.actions.length);
+      
+      cfg.realtime_configs.forEach((c, i) => {
+        if (i < 6) {
+          realtimeConfigs[i] = c;
+          console.log(`  [${i}] Pin: ${c.pin_config?.pin_alias || 'N/A'}, ID: ${c.id}, Type: ${c.pin_config?.pin_mode || 'N/A'}`);
+        }
+      });
+      
+      cfg.actions.forEach((c, i) => {
+        if (i < 10) {
+          actionConfigs[i] = c;
+          console.log(`  Action[${i}] Pin: ${c.pin_config?.pin_alias || 'N/A'}, Mode: ${c.pin_config?.pin_mode || 'N/A'}`);
+        }
+      });
+      
+      isConfigured = true;
+      initialized = true;
+      setIndicator("status-connection", true);
+      setIndicator("status-power", true);
+      initCharts();
+      
+      // Khôi phục trạng thái UI từ localStorage
+      controlIrrigation(irrigationMode === "auto");
+      controlFertilizer(fertilizerMode === "auto");
+      controlPump(pumpMode === "auto");
+    },
+    onValues: (values) => {
+      console.log('📡 === DATA RECEIVED ===');
+      console.log('Values object:', values);
+      
+      realtimeConfigs.forEach((c, i) => {
+        if (c && values[c.id]) {
+          const val = values[c.id].value;
+          const sensorName = sensorMap[i] || 'unknown';
+          console.log(`  📌 [${i}] ${sensorName}: ${val} (Type: ${typeof val}, ID: ${c.id}, Pin: ${c.pin_config?.pin_alias || 'N/A'})`);
+          
+          if (i < 4) {
+            // Index 0-3: temperature, humidity, soilMoisture, plantHeight
+            updateSensorDisplay(i, val);
+          } else if (i === 4) {
+            // Index 4: waterDistance (number)
+            console.log('  ✅ Index 4: waterDistance');
+            updateWaterLevel(parseFloat(val) || 0);
+          } else if (i === 5) {
+            // Index 5: leafColor (string) - nếu có
+            if (typeof val === 'string') {
+              // V10 - Màu sắc lá (string: xanhla/vang/do)
+              const el = document.getElementById('leafColor');
+              if (el) el.textContent = val || '';
+              updateLeafColorDisplay(val);
+              console.log('  ✅ Index 5: leafColor (string)');
+            } else {
+              // Nếu không phải string → Để trống leafColor
+              console.log('  ⚠️ Index 5: Expected string for leafColor, leaving empty');
+              const el = document.getElementById('leafColor');
+              if (el) el.textContent = '';
+            }
+          }
+        } else if (c) {
+          console.log(`  ⚠️ [${i}] ${sensorMap[i] || 'unknown'}: NO DATA (ID: ${c.id})`);
+        }
+      });
+      console.log('================');
+
+      if (!initialized) return;
+
+      const temp = parseFloat(document.getElementById('temperature').textContent) || 0;
+      const hum = parseFloat(document.getElementById('humidity').textContent) || 0;
+      const soil = parseFloat(document.getElementById('soilMoisture').textContent) || 0;
+      const plantH = parseFloat(document.getElementById('plantHeight').textContent) || 0;
+
+      console.log(`🔍 Parsed values - Temp: ${temp}, Hum: ${hum}, Soil: ${soil}`);
+
+      setStatus("temp-status", temp > 30, "Cao", "Bình thường");
+      setStatus("humidity-status", hum > 80, "Cao", "Bình thường");
+      setStatus("soil-status", soil < 40, "Cần tưới", "Đủ ẩm", 'var(--red)', 'var(--green)');
+      updateGrowthStatus(plantH);
+
+      // Chỉ add vào history nếu có giá trị thực sự (không phải 0)
+      if (temp > 0 || hum > 0 || soil > 0) {
+        addDataToHistory(temp, hum, soil);
+      } else {
+        console.log('⚠️ Bỏ qua dữ liệu 0 - chưa nhận được giá trị thực từ cảm biến');
+      }
+      
+      // Update fertilizer status display
+      updateFertilizerStatus();
+
+      if (irrigationMode === "auto" && soil < 40 && !isIrrigating) {
+        let autoDur = 600;
+        if (temp > 33 || hum < 40) autoDur = 1200;
+        else if (temp < 18 || hum > 85) autoDur = 900;
+
+        console.log(`Tự động tưới: ${autoDur}s (Đất: ${soil}%, Nhiệt: ${temp}°C, Ẩm KK: ${hum}%)`);
+        startAutoIrrigation(autoDur);
+      }
+
+      if (fertilizerMode === "auto") triggerAutoFertilize();
+    },
+    needRealtimeConfigs: true,
+    needActions: true,
+    ready: true,
+    mobileHeight: 3000
+  });
+
+  document.getElementById("irrigation-switch").addEventListener("click", () => {
+    const current = document.getElementById("irrigation-switch").classList.contains('active');
+    controlIrrigation(!current);
+  });
+
+  document.getElementById("fertilizer-switch").addEventListener("click", () => {
+    const current = document.getElementById("fertilizer-switch").classList.contains('active');
+    controlFertilizer(!current);
+  });
+
+  document.getElementById("pump-switch").addEventListener("click", () => {
+    const current = document.getElementById("pump-switch").classList.contains('active');
+    controlPump(!current);
+  });
+
+  document.getElementById("btn-pump-on").addEventListener("click", () => {
+    if (pumpMode !== "manual") return;
+    turnOnPump();
+  });
+
+  document.getElementById("btn-pump-off").addEventListener("click", () => {
+    if (pumpMode !== "manual") return;
+    turnOffPump();
+  });
+
+  ["nitrogen","phosphorus","potassium"].forEach(k => {
+    document.getElementById("btn-"+k).addEventListener("click", () => toggleFert(k));
+  });
+
+  document.getElementById("btn-irrigate").onclick = startManualIrrigation;
+  document.getElementById("btn-fertilize").onclick = startFertilize;
+
+  document.getElementById("irrigation-duration").addEventListener("input", e => {
+    const index = +e.target.value;
+    irrigationDuration = irrigationDurations[index];
+    document.getElementById("irrigation-time").textContent = irrigationLabels[index];
+  });
+
+  document.getElementById("fertilizer-duration").addEventListener("input", e => {
+    fertilizerDuration = Math.max(+e.target.value, 3);
+    document.getElementById("fertilizer-time").textContent = fertilizerDuration;
+  });
+
+  document.getElementById('tabControl').onclick = () => {
+    document.getElementById('control').style.display = 'block';
+    document.getElementById('analytics').style.display = 'none';
+    document.getElementById('tabControl').classList.add('active');
+    document.getElementById('tabAnalytics').classList.remove('active');
+  };
+  
+  document.getElementById('tabAnalytics').onclick = () => {
+    document.getElementById('control').style.display = 'none';
+    document.getElementById('analytics').style.display = 'block';
+    document.getElementById('tabAnalytics').classList.add('active');
+    document.getElementById('tabControl').classList.remove('active');
+    
+    // Resize charts sau khi chuyển tab
+    setTimeout(() => {
+      if (tempChart) tempChart.resize();
+      if (humChart) humChart.resize();
+      if (soilChart) soilChart.resize();
+    }, 100);
+  };
+
+  setInterval(() => {
+    if (initialized && fertilizerMode === "auto") triggerAutoFertilize();
+  }, 3600000);
+</script>
+</body>
+</html>
